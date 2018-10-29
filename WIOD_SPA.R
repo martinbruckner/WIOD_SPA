@@ -42,7 +42,7 @@ VA <- aggregate(. ~ code + country, VA, sum)
 EMP <- aggregate(. ~ code + country, EMP, sum)
 
 
-years <- 2014:2014
+years <- 2010:2010
 ncores <- 1
 
 year <- years[1]
@@ -109,6 +109,8 @@ mclapply(years, mc.cores = ncores, function(year){
       lapply(1:nrow(A), function(aL1) get_L2(fname, aL0, aL1, A, L1, cutoff = 0.1))
     }
   }
+  
+  zip::zip(paste0("./output/results_",ext_name,"_", year, ".zip"), files = fname)
   
   return(paste(year,"done"))
 })
