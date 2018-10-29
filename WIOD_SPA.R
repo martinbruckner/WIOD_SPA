@@ -3,6 +3,7 @@
 ##########################################################################
 
 datapath <- "W:/WU/Projekte/SRU-Projekte/04_Daten/MRIO/IO data/WIOD/WIOD_Nov16/"
+datapath <- "./input/"
 
 library(openxlsx)
 library(reshape2)
@@ -17,7 +18,7 @@ agg <- function(x)
 get_L2 <- function(fname, aL0, aL1, A, L1, cutoff){
   if(A[aL1,aL0] < cutoff) return(0)
   temp <- (extension * A)[,aL1] * A[aL1,aL0] * Y[aL0,country]
-  temp <- data.frame(L0 = aL0, L1 = aL1, L2 = 1:length(temp), L3 = 0, value = temp)
+  temp <- data.frame(country = unique(class.col$Country)[country], L0 = aL0, L1 = aL1, L2 = 1:length(temp), L3 = 0, value = temp)
   try(fwrite(temp[abs(temp$value) > cutoff, ], file = fname, row.names = FALSE, col.names = FALSE, append = TRUE))
 }
 
@@ -44,6 +45,7 @@ EMP <- aggregate(. ~ code + country, EMP, sum)
 years <- 2014:2014
 ncores <- 1
 
+year <- years[1]
 mclapply(years, mc.cores = ncores, function(year){
   load(paste0(datapath,"WIOT",year,"_October16_ROW.RData"))
   Z <- wiot[1:2464,6:(2464+5)]
@@ -101,10 +103,10 @@ mclapply(years, mc.cores = ncores, function(year){
     fwrite(results, file = fname, row.names = FALSE, col.names = FALSE, append = TRUE)
     
     # Level 2
-    aL0 <- 1
+    aL0 <- aL1 <- 1
     for(aL0 in 1:ncol(A)){
       # print(paste("sector",aL0,"/",ncol(A)))
-      lapply(1:nrow(A), function(aL1) get_L2(fname, aL0, aL1, A, L1, 0.1))
+      lapply(1:nrow(A), function(aL1) get_L2(fname, aL0, aL1, A, L1, cutoff = 0.1))
     }
   }
   
