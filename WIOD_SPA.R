@@ -3,7 +3,7 @@
 ##########################################################################
 
 datapath <- "W:/WU/Projekte/SRU-Projekte/04_Daten/MRIO/IO data/WIOD/WIOD_Nov16/"
-datapath <- "./"
+datapath <- "./input/"
 
 library(openxlsx)
 library(reshape2)
@@ -123,6 +123,8 @@ for(year in years){
       lapply(1:nrow(A), function(aL1) get_L2(fname, aL0, aL1, A, L1, cutoff = 0.1))
     }
   }
+  
+  # zip::zip(paste0("./output/results_",ext_name,"_", year, ".zip"), files = fname)
   
   # return(paste(year,"done"))
 }#)
