@@ -37,16 +37,27 @@ VA$description <- VA$variable <- NULL
 for(year in 2000:2014){
   VA[, as.character(year)] <- VA[, as.character(year)] * EXR[ match(VA$country,EXR$Acronym), as.character(year)]
 }
+COMP <- SEA[SEA$variable=="COMP", ]
+COMP$code <- class.col$IndustryGroup[1:nrow(COMP)]
+COMP$description <- COMP$variable <- NULL
+# convert COMP into current US$
+for(year in 2000:2014){
+  COMP[, as.character(year)] <- COMP[, as.character(year)] * EXR[ match(COMP$country,EXR$Acronym), as.character(year)]
+}
 # aggregate extensions
-VA <- aggregate(. ~ code + country, VA, sum)
 EMP <- aggregate(. ~ code + country, EMP, sum)
+VA <- aggregate(. ~ code + country, VA, sum)
+COMP <- aggregate(. ~ code + country, COMP, sum)
 
+# Choose extension
+ext_name <- c("pure","EMP","VA","COMP")[1]
 
-years <- 2014:2014
+years <- 2000:2014
 ncores <- 1
 
 year <- years[1]
-mclapply(years, mc.cores = ncores, function(year){
+# mclapply(years, mc.cores = ncores, function(year){
+for(year in years){
   load(paste0(datapath,"WIOT",year,"_October16_ROW.RData"))
   Z <- wiot[1:2464,6:(2464+5)]
   Y <- wiot[1:2464,(2465+5):2689]
@@ -70,15 +81,18 @@ mclapply(years, mc.cores = ncores, function(year){
   x <- rowSums(Z) + rowSums(Y)
   A <- t(t(Z)/x)
   A[! is.finite(A)] <- 0
-
-  # Choose extension
-  extension <- 1
-  ext_name <- "pure"
-  # extension <- c(as.numeric(VA[, as.character(year)]), rep(0,7)) / x
-  # ext_name <- "VA"
-  # extension <- c(as.numeric(EMP[, as.character(year)]), rep(0,7)) / x
-  # ext_name <- "EMP"
-  # extension[!is.finite(extension)] <- 0
+  
+  if(ext_name=="pure"){
+    extension <- 1
+  } else {
+    extension <- c(as.numeric(EMP[, as.character(year)]), rep(0,7)) / x
+    ext_name <- "EMP"
+    extension <- c(as.numeric(VA[, as.character(year)]), rep(0,7)) / x
+    ext_name <- "VA"
+    extension <- c(as.numeric(COMP[, as.character(year)]), rep(0,7)) / x
+    ext_name <- "COMP"
+    extension[!is.finite(extension)] <- 0
+  }
   
   fname <- paste0("./output/results_",ext_name,"_", year, ".csv")
   fwrite(list("country","L0","L1","L2","L3","value"), file = fname, row.names = FALSE, col.names = FALSE)
@@ -110,6 +124,6 @@ mclapply(years, mc.cores = ncores, function(year){
     }
   }
   
-  return(paste(year,"done"))
-})
+  # return(paste(year,"done"))
+}#)
 
