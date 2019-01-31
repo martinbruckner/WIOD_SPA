@@ -2,7 +2,7 @@
 ##  WIOD Structural Path Analysis
 ##########################################################################
 
-datapath <- "W:/WU/Projekte/SRU-Projekte/04_Daten/MRIO/IO data/WIOD/WIOD_Nov16/"
+datapath <- "W:/WU/Projekte/GRU/04_Daten/MRIO/IO data/WIOD/WIOD_Nov16/"
 datapath <- "./input/"
 
 library(openxlsx)
@@ -50,7 +50,7 @@ VA <- aggregate(. ~ code + country, VA, sum)
 COMP <- aggregate(. ~ code + country, COMP, sum)
 
 # Choose extension
-ext_name <- c("pure","EMP","VA","COMP")[1]
+ext_name <- c("pure","EMP","VA","COMP")[3]
 
 years <- 2000:2014
 ncores <- 1
@@ -85,12 +85,7 @@ for(year in years){
   if(ext_name=="pure"){
     extension <- 1
   } else {
-    extension <- c(as.numeric(EMP[, as.character(year)]), rep(0,7)) / x
-    ext_name <- "EMP"
-    extension <- c(as.numeric(VA[, as.character(year)]), rep(0,7)) / x
-    ext_name <- "VA"
-    extension <- c(as.numeric(COMP[, as.character(year)]), rep(0,7)) / x
-    ext_name <- "COMP"
+    extension <- c(as.numeric(get(ext_name)[, as.character(year)]), rep(0,7)) / x
     extension[!is.finite(extension)] <- 0
   }
   
